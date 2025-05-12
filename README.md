@@ -1,3 +1,4 @@
+# Beauty Salon Management System - Senior Developer Challenge
 
 ## 🎯 Core Requirements
 
