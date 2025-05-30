@@ -1,0 +1,21 @@
+services:
+  db:
+    image: postgres:latest
+    restart: always
+    ports:
+      - 5433:5432
+    environment:
+      POSTGRES_DB: SalonManagement
+      POSTGRES_USER: SalonUser
+      POSTGRES_PASSWORD: FabPassword
+    volumes:
+      - db:/var/lib/postgresql/data
+  flyway:
+    image: flyway/flyway
+    command: -url=jdbc:postgresql://db/SalonManagement -schemas=master -user=SalonUser -password=FabPassword -outOfOrder=true -connectRetries=5 migrate
+    volumes:
+      - ./database/migrations:/flyway/sql
+    depends_on:
+      - db
+volumes:
+  db:

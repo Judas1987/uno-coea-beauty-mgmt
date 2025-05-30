@@ -27,7 +27,7 @@ Appointments {
 
 Services {
     int Id
-    string Name
+    string Title
     string Description
     decimal Price
     int DurationMinutes
@@ -39,13 +39,13 @@ Services {
 
 ServiceCategories {
     int Id
-    string Name
+    string Title
     string Description
 }
 
-ServicePackages {
+Packages {
     int Id
-    string Name
+    string Title
     string Description
     decimal Price
     datetime SeasonStart
@@ -53,7 +53,7 @@ ServicePackages {
     boolean IsActive
 }
 
-PackageServices {
+ServicePackages {
     int PackageId
     int ServiceId
 }
