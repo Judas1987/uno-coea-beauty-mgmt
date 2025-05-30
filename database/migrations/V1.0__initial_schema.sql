@@ -1,0 +1,52 @@
+CREATE TABLE customers (
+    id SERIAL PRIMARY KEY,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    phone_number VARCHAR(100) NOT NULL,
+    date_of_birth TIMESTAMP NOT NULL,
+    loyalty_points INT NOT NULL
+)
+
+CREATE TABLE services (
+    id SERIAL PRIMARY KEY,
+    title TEXT NOT NULL,
+    description TEXT,
+    price NUMERIC(10, 2) NOT NULL,
+    duration_minutes INT NOT NULL,
+    category_id INT NOT NULL,
+    is_active BOOLEAN,
+    is_promotional BOOLEAN,
+    promotional_price NUMERIC(10, 2),
+    CONSTRAINT fk_services_service_category_id FOREIGN KEY (category_id) REFERENCES service_categories(id)
+)
+
+CREATE TABLE appointments (
+    id SERIAL PRIMARY KEY,
+    customer_id INT NOT NULL,
+    service_id INT NOT NULL,
+    start_time TIMESTAMP NOT NULL,
+    end_time TIMESTAMP NOT NULL,
+    status TEXT,
+    notes TEXT,
+    CONSTRAINT fk_appointments_customer_id FOREIGN KEY (customer_id) REFERENCES appointments(id),
+    CONSTRAINT fk_appointments_service_id FOREIGN KEY (service_id) REFERENCES services(id)
+)
+
+CREATE TABLE service_categories {
+    id SERIAL PRIMARY KEY,
+    title TEXT NOT NULL,
+    description TEXT
+}
+
+CREATE TABLE packages {
+
+}
+
+CREATE TABLE service_packages {
+    package_id INT NOT NULL,
+    service_id INT NOT NULL,
+    CONSTRAINT fk_appointments_package_id FOREIGN KEY (package_id) REFERENCES packages(id),
+    CONSTRAINT fk_appointments_service_id FOREIGN KEY (service_id) REFERENCES services(id)
+    UNIQUE(package_id, service_id)
+}
