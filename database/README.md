@@ -11,7 +11,6 @@ Customers {
     string LastName
     string Email
     string PhoneNumber
-    datetime DateOfBirth
     int LoyaltyPoints
 }
 

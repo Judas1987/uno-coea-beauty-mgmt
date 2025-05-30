@@ -22,9 +22,6 @@ public class Customer
     [Column("phone_number")]
     public string PhoneNumber { get; set; }
 
-    [Column("date_of_birth")]
-    public DateTime DateOfBirth { get; set; }
-
     [Column("loyalty_points")]
     public int LoyaltyPoints { get; set; }
 

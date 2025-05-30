@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SalonManagement.Dal;
+using SalonManagement.Services.Interfaces;
+using SalonManagement.Services.Services;
 
 public class Program
 {
@@ -13,6 +15,14 @@ public class Program
 
         builder.Services.AddDbContext<SalonDbContext>(options => 
             options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+        builder.Services
+            .AddScoped<IAppointmentsService, AppointmentsService>()
+            .AddScoped<ICustomersService, CustomersService>()
+            .AddScoped<IPackagesService, PackagesService>()
+            .AddScoped<IServiceCategoriesService, ServiceCategoriesService>()
+            .AddScoped<IServicePackagesService, ServicePackagesService>()
+            .AddScoped<IServicesService, ServicesService>();
         
         var app = builder.Build();
 

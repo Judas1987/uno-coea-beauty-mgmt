@@ -4,7 +4,6 @@ CREATE TABLE customers (
     last_name VARCHAR(100) NOT NULL,
     email VARCHAR(100) NOT NULL,
     phone_number VARCHAR(100) NOT NULL,
-    date_of_birth TIMESTAMP NOT NULL,
     loyalty_points INT NOT NULL
 );
 
