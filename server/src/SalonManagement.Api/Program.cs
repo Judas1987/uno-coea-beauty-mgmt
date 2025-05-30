@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using SalonManagement.Dal;
+
 public class Program
 {
     public static void Main(string[] args)
@@ -8,6 +11,9 @@ public class Program
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
 
+        builder.Services.AddDbContext<SalonDbContext>(options => 
+            options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+        
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
