@@ -61,6 +61,34 @@ Performance monitoring
 
 ### Customers
 
+### `GET /customers`
+
+**Description:** Get all customers.
+
+**Responses:**
+- `200 OK`
+- `404 Not Found`
+
+**Response Example:**
+```json
+[
+  {
+    "id": 1,
+    "userName": "moviebuff88",
+    "email": "buff@example.com",
+    "isAdmin": false,
+    "isDeleted": false
+  },
+  {
+    "id": 2,
+    "userName": "admin_user",
+    "email": "admin@example.com",
+    "isAdmin": true,
+    "isDeleted": false
+  }
+]
+```
+
 ### Appointments
 
 ### Packages

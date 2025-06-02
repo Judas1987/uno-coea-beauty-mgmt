@@ -1,3 +1,7 @@
+-- Create and set the schema
+CREATE SCHEMA IF NOT EXISTS master;
+SET search_path TO master;
+
 CREATE TABLE customers (
     id SERIAL PRIMARY KEY,
     first_name VARCHAR(100) NOT NULL,
@@ -49,7 +53,7 @@ CREATE TABLE packages (
 CREATE TABLE service_packages (
     package_id INT NOT NULL,
     service_id INT NOT NULL,
-    CONSTRAINT fk_appointments_package_id FOREIGN KEY (package_id) REFERENCES packages(id),
-    CONSTRAINT fk_appointments_service_id FOREIGN KEY (service_id) REFERENCES services(id),
-    UNIQUE(package_id, service_id)
+    PRIMARY KEY (package_id, service_id),
+    CONSTRAINT fk_service_packages_package_id FOREIGN KEY (package_id) REFERENCES packages(id),
+    CONSTRAINT fk_service_packages_service_id FOREIGN KEY (service_id) REFERENCES services(id)
 );

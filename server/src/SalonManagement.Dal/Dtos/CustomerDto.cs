@@ -2,7 +2,7 @@ namespace SalonManagement.Dal.Dtos;
 
 public class CustomerDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
 
     public string FirstName { get; set; } = string.Empty;
     
@@ -13,4 +13,6 @@ public class CustomerDto
     public string PhoneNumber { get; set; } = string.Empty;
     
     public int LoyaltyPoints { get; set; }
+    
+    public string FullName => $"{FirstName} {LastName}";
 }

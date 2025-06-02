@@ -1,32 +1,120 @@
+using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using SalonManagement.Dal;
 using SalonManagement.Dal.Dtos;
+using SalonManagement.Dal.Entities;
 using SalonManagement.Services.Interfaces;
 
 namespace SalonManagement.Services.Services;
 
 public class AppointmentsService : IAppointmentsService
 {
-    public Task<IEnumerable<AppointmentDto>> GetAllAppointmentsAsync()
+    private readonly SalonDbContext _dbContext;
+    private readonly IMapper _mapper;
+
+    public AppointmentsService(
+        SalonDbContext dbContext,
+        IMapper mapper)
     {
-        throw new NotImplementedException();
+        _dbContext = dbContext;
+        _mapper = mapper;
     }
 
-    public Task<AppointmentDto> GetAppointmentByIdAsync(int appointmentId)
+    public async Task<IEnumerable<AppointmentDto>> GetAllAppointmentsAsync()
     {
-        throw new NotImplementedException();
+        var appointments = await _dbContext.Appointments
+            .Include(a => a.Customer)
+            .Include(a => a.Service)
+            .ToListAsync();
+
+        return _mapper.Map<IEnumerable<AppointmentDto>>(appointments);
     }
 
-    public Task CreateAppointmentAsync(AppointmentDto appointment)
+    public async Task<AppointmentDto?> GetAppointmentByIdAsync(int appointmentId)
     {
-        throw new NotImplementedException();
+        var appointment = await _dbContext.Appointments
+            .Include(a => a.Customer)
+            .Include(a => a.Service)
+            .FirstOrDefaultAsync(a => a.Id == appointmentId);
+
+        return appointment != null ? _mapper.Map<AppointmentDto>(appointment) : null;
     }
 
-    public Task UpdateAppointmentAsync(int appointmentId, AppointmentDto appointment)
+    public async Task<AppointmentDto> CreateAppointmentAsync(AppointmentDto appointmentDto)
     {
-        throw new NotImplementedException();
+        var service = await _dbContext.Services.FindAsync(appointmentDto.ServiceId);
+        if (service == null)
+        {
+            throw new ArgumentException($"Service with ID {appointmentDto.ServiceId} not found.");
+        }
+
+        // Calculate end time based on service duration
+        appointmentDto.EndTime = appointmentDto.StartTime.AddMinutes(service.DurationMinutes);
+        
+        if (await HasSchedulingConflict(appointmentDto))
+        {
+            throw new InvalidOperationException("The requested time slot conflicts with an existing appointment.");
+        }
+
+        var appointment = _mapper.Map<Appointment>(appointmentDto);
+        _dbContext.Appointments.Add(appointment);
+        await _dbContext.SaveChangesAsync();
+
+        return await GetAppointmentByIdAsync(appointment.Id);
     }
 
-    public Task DeleteAppointmentAsync(int appointmentId)
+    public async Task UpdateAppointmentAsync(int appointmentId, AppointmentDto appointmentDto)
     {
-        throw new NotImplementedException();
+        var existingAppointment = await _dbContext.Appointments.FindAsync(appointmentId);
+        if (existingAppointment == null)
+        {
+            throw new ArgumentException($"Appointment with ID {appointmentId} not found.");
+        }
+        
+        var service = await _dbContext.Services.FindAsync(appointmentDto.ServiceId);
+        if (service == null)
+        {
+            throw new ArgumentException($"Service with ID {appointmentDto.ServiceId} not found.");
+        }
+
+        // Calculate end time based on service duration
+        appointmentDto.EndTime = appointmentDto.StartTime.AddMinutes(service.DurationMinutes);
+        
+        if (await HasSchedulingConflict(appointmentDto, appointmentId))
+        {
+            throw new InvalidOperationException("The requested time slot conflicts with an existing appointment.");
+        }
+        
+        _mapper.Map(appointmentDto, existingAppointment);
+        await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task DeleteAppointmentAsync(int appointmentId)
+    {
+        var appointment = await _dbContext.Appointments.FindAsync(appointmentId);
+        if (appointment == null)
+        {
+            throw new ArgumentException($"Appointment with ID {appointmentId} not found.");
+        }
+
+        _dbContext.Appointments.Remove(appointment);
+        await _dbContext.SaveChangesAsync();
+    }
+
+    private async Task<bool> HasSchedulingConflict(AppointmentDto appointment, int? excludeAppointmentId = null)
+    {
+        var query = _dbContext.Appointments
+            .Where(a => a.CustomerId == appointment.CustomerId)
+            .Where(a => 
+                (a.StartTime <= appointment.StartTime && a.EndTime > appointment.StartTime) ||
+                (a.StartTime < appointment.EndTime && a.EndTime >= appointment.EndTime) ||
+                (a.StartTime >= appointment.StartTime && a.EndTime <= appointment.EndTime));
+
+        if (excludeAppointmentId.HasValue)
+        {
+            query = query.Where(a => a.Id != excludeAppointmentId.Value);
+        }
+
+        return await query.AnyAsync();
     }
 }
