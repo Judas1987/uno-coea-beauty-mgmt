@@ -33,7 +33,7 @@ Services {
     int CategoryId
     boolean IsActive
     boolean IsPromotional
-    decimal PromotionPrice
+    decimal PromotionalPrice
 }
 
 ServiceCategories {
@@ -46,10 +46,6 @@ Packages {
     int Id
     string Title
     string Description
-    decimal Price
-    datetime SeasonStart
-    datetime SeasonEnd
-    boolean IsActive
 }
 
 ServicePackages {
@@ -57,9 +53,9 @@ ServicePackages {
     int ServiceId
 }
 
-Customers ||--o{ Appointments : has
-Appointments }o--|| Services : for
-Services }o--|| ServiceCategories : categorized
-ServicePackages ||--o{ PackageServices : includes
-Services ||--o{ PackageServices : part_of
+Customers ||--o{ Appointments : books
+Appointments }o--|| Services : includes
+Services }o--|| ServiceCategories : belongs_to
+Packages ||--o{ ServicePackages : groups
+Services ||--o{ ServicePackages : part_of
 ```
