@@ -16,11 +16,16 @@ public class AppointmentMappingProfile : Profile
             .ForMember(dest => dest.Customer, opt => opt.Ignore())
             .ForMember(dest => dest.Service, opt => opt.Ignore());
         
-        // Entity > DTO
+        // Entity <-> DTO
         CreateMap<Appointment, AppointmentDto>()
             .ForMember(dest => dest.Customer, opt => opt.MapFrom(src => src.Customer))
             .ForMember(dest => dest.Service, opt => opt.MapFrom(src => src.Service));
 
+        CreateMap<AppointmentDto, Appointment>()
+            .ForMember(dest => dest.Customer, opt => opt.Ignore())
+            .ForMember(dest => dest.Service, opt => opt.Ignore());
+
+        // Related entity mappings
         CreateMap<Customer, CustomerDto>();
         CreateMap<Service, ServiceDto>();
         
@@ -40,7 +45,5 @@ public class AppointmentMappingProfile : Profile
                         ? src.Service.PromotionalPrice ?? src.Service.Price 
                         : src.Service.Price)
                     : 0m));
-
-        
     }
 } 

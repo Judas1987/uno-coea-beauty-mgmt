@@ -48,19 +48,33 @@ public class AppointmentsService : IAppointmentsService
             throw new ArgumentException($"Service with ID {appointmentDto.ServiceId} not found.");
         }
 
-        // Calculate end time based on service duration
+        var customer = await _dbContext.Customers.FindAsync(appointmentDto.CustomerId);
+        if (customer == null)
+        {
+            throw new ArgumentException($"Customer with ID {appointmentDto.CustomerId} not found.");
+        }
+
         appointmentDto.EndTime = appointmentDto.StartTime.AddMinutes(service.DurationMinutes);
-        
+
+        var existingAppointments = await _dbContext.Appointments.ToListAsync();
+        if (existingAppointments.Count == 0)
+        {
+            var appointment = _mapper.Map<Appointment>(appointmentDto);
+            _dbContext.Appointments.Add(appointment);
+            await _dbContext.SaveChangesAsync();
+            return await GetAppointmentByIdAsync(appointment.Id);
+        }
+
         if (await HasSchedulingConflict(appointmentDto))
         {
             throw new InvalidOperationException("The requested time slot conflicts with an existing appointment.");
         }
 
-        var appointment = _mapper.Map<Appointment>(appointmentDto);
-        _dbContext.Appointments.Add(appointment);
+        var newAppointment = _mapper.Map<Appointment>(appointmentDto);
+        _dbContext.Appointments.Add(newAppointment);
         await _dbContext.SaveChangesAsync();
 
-        return await GetAppointmentByIdAsync(appointment.Id);
+        return await GetAppointmentByIdAsync(newAppointment.Id);
     }
 
     public async Task UpdateAppointmentAsync(int appointmentId, AppointmentDto appointmentDto)
@@ -70,21 +84,20 @@ public class AppointmentsService : IAppointmentsService
         {
             throw new ArgumentException($"Appointment with ID {appointmentId} not found.");
         }
-        
+
         var service = await _dbContext.Services.FindAsync(appointmentDto.ServiceId);
         if (service == null)
         {
             throw new ArgumentException($"Service with ID {appointmentDto.ServiceId} not found.");
         }
 
-        // Calculate end time based on service duration
         appointmentDto.EndTime = appointmentDto.StartTime.AddMinutes(service.DurationMinutes);
-        
+
         if (await HasSchedulingConflict(appointmentDto, appointmentId))
         {
             throw new InvalidOperationException("The requested time slot conflicts with an existing appointment.");
         }
-        
+
         _mapper.Map(appointmentDto, existingAppointment);
         await _dbContext.SaveChangesAsync();
     }
@@ -103,12 +116,8 @@ public class AppointmentsService : IAppointmentsService
 
     private async Task<bool> HasSchedulingConflict(AppointmentDto appointment, int? excludeAppointmentId = null)
     {
-        var query = _dbContext.Appointments
-            .Where(a => a.CustomerId == appointment.CustomerId)
-            .Where(a => 
-                (a.StartTime <= appointment.StartTime && a.EndTime > appointment.StartTime) ||
-                (a.StartTime < appointment.EndTime && a.EndTime >= appointment.EndTime) ||
-                (a.StartTime >= appointment.StartTime && a.EndTime <= appointment.EndTime));
+        var query = _dbContext.Appointments.Where(a =>
+            (a.StartTime < appointment.EndTime && a.EndTime > appointment.StartTime)).AsQueryable();
 
         if (excludeAppointmentId.HasValue)
         {

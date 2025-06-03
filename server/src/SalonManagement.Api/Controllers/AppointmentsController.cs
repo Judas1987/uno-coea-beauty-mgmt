@@ -50,11 +50,14 @@ public class AppointmentsController : ControllerBase
         try
         {
             var appointmentDto = _mapper.Map<AppointmentDto>(request);
-            await _appointmentsService.CreateAppointmentAsync(appointmentDto);
+            var createdAppointment = await _appointmentsService.CreateAppointmentAsync(appointmentDto);
+            if (createdAppointment == null)
+            {
+                return BadRequest("Failed to create appointment");
+            }
             
-            var createdAppointment = await _appointmentsService.GetAppointmentByIdAsync(appointmentDto.Id);
-            return CreatedAtAction(nameof(GetAppointment), new { id = createdAppointment.Id }, 
-                _mapper.Map<AppointmentViewModel>(createdAppointment));
+            var viewModel = _mapper.Map<AppointmentViewModel>(createdAppointment);
+            return CreatedAtAction(nameof(GetAppointment), new { id = viewModel.Id }, viewModel);
         }
         catch (ArgumentException ex)
         {

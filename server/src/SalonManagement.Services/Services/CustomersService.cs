@@ -45,9 +45,9 @@ public class CustomersService : ICustomersService
     public async Task<CustomerDto> CreateCustomerAsync(CustomerDto customerDto)
     {
         var customer = _mapper.Map<Customer>(customerDto);
-        
+
         customer.LoyaltyPoints = 0;
-        
+
         _dbContext.Customers.Add(customer);
         await _dbContext.SaveChangesAsync();
 

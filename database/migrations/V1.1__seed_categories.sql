@@ -1,5 +1,5 @@
 -- Set the schema
-SET search_path TO master;
+SET search_path TO public;
 
 -- Insert initial service categories
 INSERT INTO service_categories (title, description) VALUES

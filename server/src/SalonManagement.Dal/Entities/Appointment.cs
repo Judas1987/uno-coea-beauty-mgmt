@@ -16,7 +16,7 @@ public class Appointment
     [Column("service_id")]
     public int ServiceId { get; set; }
     
-    [Column("start_tim")]
+    [Column("start_time")]
     public DateTime StartTime { get; set; }
     
     [Column("end_time")]

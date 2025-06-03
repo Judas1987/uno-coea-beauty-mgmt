@@ -42,7 +42,7 @@ public class ServicesService : IServicesService
         await ValidateServiceCategory(serviceDto.CategoryId);
 
         var service = _mapper.Map<Service>(serviceDto);
-        
+
         service.IsActive = true;
         service.IsPromotional = false;
         service.PromotionalPrice = null;
@@ -58,15 +58,14 @@ public class ServicesService : IServicesService
         var service = await _dbContext.Services
             .Include(s => s.Category)
             .FirstOrDefaultAsync(s => s.Id == serviceId);
-            
+
         if (service == null)
         {
             throw new ArgumentException($"Service with ID {serviceId} not found.");
         }
 
         await ValidateServiceCategory(serviceDto.CategoryId);
-        
-        // Manually update the properties
+
         service.Title = serviceDto.Title;
         service.Description = serviceDto.Description;
         service.Price = serviceDto.Price;
@@ -87,13 +86,11 @@ public class ServicesService : IServicesService
             throw new ArgumentException($"Service with ID {serviceId} not found.");
         }
 
-        // Check if service has any appointments
         var hasAppointments = await _dbContext.Appointments
             .AnyAsync(a => a.ServiceId == serviceId);
 
         if (hasAppointments)
         {
-            // Instead of deleting, deactivate the service
             service.IsActive = false;
         }
         else
@@ -119,7 +116,7 @@ public class ServicesService : IServicesService
     {
         var promotions = await _dbContext.Services
             .Include(s => s.Category)
-            .Where(s => (s.IsActive == null || s.IsActive == true) && 
+            .Where(s => (s.IsActive == null || s.IsActive == true) &&
                        (s.IsPromotional == true))
             .OrderBy(s => s.Title)
             .ToListAsync();
@@ -173,7 +170,7 @@ public class ServicesService : IServicesService
     public async Task<IEnumerable<ServiceDto>> SearchServicesAsync(string searchTerm)
     {
         var searchPattern = $"%{searchTerm}%";
-        
+
         var services = await _dbContext.Services
             .Include(s => s.Category)
             .Where(s => (s.IsActive == null || s.IsActive == true) &&
@@ -190,14 +187,19 @@ public class ServicesService : IServicesService
     {
         var services = await _dbContext.Services
             .Include(s => s.Category)
-            .Where(s => (s.IsActive == null || s.IsActive == true) &&
-                ((s.IsPromotional == true && s.PromotionalPrice >= minPrice && s.PromotionalPrice <= maxPrice) ||
-                 (s.IsPromotional != true && s.Price >= minPrice && s.Price <= maxPrice)))
+            .Where(s =>
+                (s.IsActive ?? true) &&
+                (
+                    (s.IsPromotional == true && s.PromotionalPrice >= minPrice && s.PromotionalPrice <= maxPrice) ||
+                    (s.IsPromotional != true && s.Price >= minPrice && s.Price <= maxPrice)
+                )
+            )
             .OrderBy(s => s.IsPromotional == true ? s.PromotionalPrice : s.Price)
             .ToListAsync();
 
         return _mapper.Map<IEnumerable<ServiceDto>>(services);
     }
+
 
     private async Task ValidateServiceCategory(int categoryId)
     {

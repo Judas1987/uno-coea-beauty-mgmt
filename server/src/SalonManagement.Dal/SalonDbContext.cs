@@ -13,9 +13,6 @@ public class SalonDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // Set the default schema for all entities
-        modelBuilder.HasDefaultSchema("master");
-
         // Configure ServicePackage as a many-to-many relationship
         modelBuilder.Entity<ServicePackage>()
             .HasKey(sp => new { sp.PackageId, sp.ServiceId });

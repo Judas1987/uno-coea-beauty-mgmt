@@ -1,6 +1,6 @@
 -- Create and set the schema
-CREATE SCHEMA IF NOT EXISTS master;
-SET search_path TO master;
+CREATE SCHEMA IF NOT EXISTS public;
+SET search_path TO public;
 
 CREATE TABLE customers (
     id SERIAL PRIMARY KEY,
@@ -35,8 +35,8 @@ CREATE TABLE appointments (
     id SERIAL PRIMARY KEY,
     customer_id INT NOT NULL,
     service_id INT NOT NULL,
-    start_time TIMESTAMP NOT NULL,
-    end_time TIMESTAMP NOT NULL,
+    start_time TIMESTAMP WITH TIME ZONE NOT NULL,
+    end_time TIMESTAMP WITH TIME ZONE NOT NULL,
     status TEXT,
     notes TEXT,
     CONSTRAINT fk_appointments_customer_id FOREIGN KEY (customer_id) REFERENCES customers(id),
