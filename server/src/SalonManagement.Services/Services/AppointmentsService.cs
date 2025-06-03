@@ -9,12 +9,10 @@ namespace SalonManagement.Services.Services;
 
 public class AppointmentsService : IAppointmentsService
 {
-    private readonly SalonDbContext _dbContext;
+    private readonly ISalonDbContext _dbContext;
     private readonly IMapper _mapper;
 
-    public AppointmentsService(
-        SalonDbContext dbContext,
-        IMapper mapper)
+    public AppointmentsService(ISalonDbContext dbContext, IMapper mapper)
     {
         _dbContext = dbContext;
         _mapper = mapper;

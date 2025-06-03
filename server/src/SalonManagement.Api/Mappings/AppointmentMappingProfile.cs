@@ -11,19 +11,16 @@ public class AppointmentMappingProfile : Profile
     {
         // Request > DTO
         CreateMap<CreateAppointmentRequest, AppointmentDto>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.Status, opt => opt.MapFrom(_ => "Scheduled"))
             .ForMember(dest => dest.EndTime, opt => opt.Ignore())
             .ForMember(dest => dest.Customer, opt => opt.Ignore())
-            .ForMember(dest => dest.Service, opt => opt.Ignore());
+            .ForMember(dest => dest.Service, opt => opt.Ignore())
+            .ForMember(dest => dest.Notes, opt => opt.MapFrom(src => src.Notes ?? string.Empty));
         
         // Entity <-> DTO
-        CreateMap<Appointment, AppointmentDto>()
-            .ForMember(dest => dest.Customer, opt => opt.MapFrom(src => src.Customer))
-            .ForMember(dest => dest.Service, opt => opt.MapFrom(src => src.Service));
-
-        CreateMap<AppointmentDto, Appointment>()
-            .ForMember(dest => dest.Customer, opt => opt.Ignore())
-            .ForMember(dest => dest.Service, opt => opt.Ignore());
+        CreateMap<Appointment, AppointmentDto>();
+        CreateMap<AppointmentDto, Appointment>();
 
         // Related entity mappings
         CreateMap<Customer, CustomerDto>();

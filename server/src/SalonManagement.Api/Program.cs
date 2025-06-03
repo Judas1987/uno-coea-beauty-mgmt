@@ -28,7 +28,7 @@ public class Program
                       .AllowCredentials();
             });
         });
-        
+
         // Configure Swagger/OpenAPI
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(c =>
@@ -53,7 +53,7 @@ public class Program
         builder.Services.AddFluentValidationAutoValidation();
         builder.Services.AddValidatorsFromAssemblyContaining<CreateAppointmentRequestValidator>();
 
-        builder.Services.AddDbContext<SalonDbContext>(options => 
+        builder.Services.AddDbContext<SalonDbContext>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
         builder.Services
@@ -62,8 +62,9 @@ public class Program
             .AddScoped<IPackagesService, PackagesService>()
             .AddScoped<IServiceCategoriesService, ServiceCategoriesService>()
             .AddScoped<IServicePackagesService, ServicePackagesService>()
-            .AddScoped<IServicesService, ServicesService>();
-        
+            .AddScoped<IServicesService, ServicesService>()
+            .AddScoped<ISalonDbContext, SalonDbContext>();
+
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
@@ -85,7 +86,7 @@ public class Program
         app.UseHttpsRedirection();
 
         app.UseAuthorization();
-        
+
         app.MapControllers();
 
         app.Run();

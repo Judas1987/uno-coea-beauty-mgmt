@@ -3,11 +3,14 @@ using SalonManagement.Dal.Entities;
 
 namespace SalonManagement.Dal;
 
-public class SalonDbContext : DbContext
+public class SalonDbContext : DbContext, ISalonDbContext
 {
-    public SalonDbContext(DbContextOptions<SalonDbContext> options) : base(options)
-    {
-    }
+    public SalonDbContext(DbContextOptions<SalonDbContext> options)
+        : base(options) { }
+
+    public virtual DbSet<Appointment> Appointments => Set<Appointment>();
+    public virtual DbSet<Customer> Customers => Set<Customer>();
+    public virtual DbSet<Service> Services => Set<Service>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -28,10 +31,7 @@ public class SalonDbContext : DbContext
             .HasForeignKey(sp => sp.ServiceId);
     }
 
-    public DbSet<Appointment> Appointments { get; set; }
-    public DbSet<Customer> Customers { get; set; }
     public DbSet<Package> Packages { get; set; }
     public DbSet<ServiceCategory> ServiceCategories { get; set; }
     public DbSet<ServicePackage> ServicePackages { get; set; }
-    public DbSet<Service> Services { get; set; }
 }

@@ -9,7 +9,7 @@ namespace SalonManagement.Services.Services;
 
 public class CustomersService : ICustomersService
 {
-    private readonly SalonDbContext _dbContext;
+    private readonly ISalonDbContext _dbContext;
     private readonly IMapper _mapper;
 
     // Loyalty points configuration
@@ -17,7 +17,7 @@ public class CustomersService : ICustomersService
     private const int POINTS_PER_REFERRAL = 50;
     private const decimal POINTS_TO_CURRENCY_RATIO = 0.01m; // 100 points = $1
 
-    public CustomersService(SalonDbContext dbContext, IMapper mapper)
+    public CustomersService(ISalonDbContext dbContext, IMapper mapper)
     {
         _dbContext = dbContext;
         _mapper = mapper;
