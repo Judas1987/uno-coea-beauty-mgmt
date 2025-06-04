@@ -1,10 +1,7 @@
 using AutoFixture;
-using AutoMapper;
 using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
 using MockQueryable.NSubstitute;
 using NSubstitute;
-using SalonManagement.Dal.Dtos;
 using SalonManagement.Dal.Entities;
 using SalonManagement.Services.Interfaces;
 using SalonManagement.Services.Services;
@@ -32,7 +29,7 @@ public class AppointmentsServiceTests : TestBase
             .Create();
 
         var customer = Fixture.Create<Customer>();
-        
+
         var appointments = Fixture.Build<Appointment>()
             .With(a => a.Customer, customer)
             .With(a => a.CustomerId, customer.Id)
@@ -74,7 +71,7 @@ public class AppointmentsServiceTests : TestBase
         var mockSet = new List<Appointment> { appointment }
             .AsQueryable()
             .BuildMockDbSet();
-        
+
         DbContext.Appointments.Returns(mockSet);
 
         // Act
@@ -98,7 +95,7 @@ public class AppointmentsServiceTests : TestBase
         var mockSet = new List<Appointment>()
             .AsQueryable()
             .BuildMockDbSet();
-            
+
         DbContext.Appointments.Returns(mockSet);
 
         // Act

@@ -1,8 +1,5 @@
 using AutoFixture;
-using AutoMapper;
 using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 using MockQueryable.NSubstitute;
 using NSubstitute;
 using SalonManagement.Dal.Dtos;

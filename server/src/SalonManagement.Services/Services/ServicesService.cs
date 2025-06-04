@@ -9,10 +9,10 @@ namespace SalonManagement.Services.Services;
 
 public class ServicesService : IServicesService
 {
-    private readonly SalonDbContext _dbContext;
+    private readonly ISalonDbContext _dbContext;
     private readonly IMapper _mapper;
 
-    public ServicesService(SalonDbContext dbContext, IMapper mapper)
+    public ServicesService(ISalonDbContext dbContext, IMapper mapper)
     {
         _dbContext = dbContext;
         _mapper = mapper;
