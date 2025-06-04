@@ -38,9 +38,7 @@ public class ServiceMappingProfile : Profile
         CreateMap<ServiceDto, ServiceViewModel>()
             .ForMember(dest => dest.CategoryTitle,
                 opt => opt.MapFrom(src => src.Category != null ? src.Category.Title : string.Empty))
-            .ForMember(dest => dest.IsActive,
-                opt => opt.MapFrom(src => src.IsActive ?? true))
             .ForMember(dest => dest.IsPromotional,
                 opt => opt.MapFrom(src => src.IsPromotional ?? false));
     }
-} 
+}

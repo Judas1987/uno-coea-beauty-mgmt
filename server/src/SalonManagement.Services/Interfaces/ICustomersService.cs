@@ -12,6 +12,5 @@ public interface ICustomersService
 
     Task<int> AddLoyaltyPointsForVisitAsync(int customerId);
     Task<int> AddLoyaltyPointsForReferralAsync(int customerId);
-    Task<(int remainingPoints, decimal discountAmount)> UsePointsForDiscountAsync(int customerId, int pointsToUse);
     Task<decimal> GetAvailableDiscountAmountAsync(int customerId);
 }

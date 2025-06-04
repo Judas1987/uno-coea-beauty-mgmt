@@ -26,7 +26,7 @@ public class Service
     public int CategoryId { get; set; }
 
     [Column("is_active")]
-    public bool? IsActive { get; set; }
+    public bool IsActive { get; set; }
 
     [Column("is_promotional")]
     public bool? IsPromotional { get; set; }

@@ -52,17 +52,10 @@ public class AppointmentsService : IAppointmentsService
             throw new ArgumentException($"Customer with ID {appointmentDto.CustomerId} not found.");
         }
 
+        // Calculate end time based on service duration
         appointmentDto.EndTime = appointmentDto.StartTime.AddMinutes(service.DurationMinutes);
 
-        var existingAppointments = await _dbContext.Appointments.ToListAsync();
-        if (existingAppointments.Count == 0)
-        {
-            var appointment = _mapper.Map<Appointment>(appointmentDto);
-            _dbContext.Appointments.Add(appointment);
-            await _dbContext.SaveChangesAsync();
-            return await GetAppointmentByIdAsync(appointment.Id);
-        }
-
+        // Check for scheduling conflicts with existing appointments
         if (await HasSchedulingConflict(appointmentDto))
         {
             throw new InvalidOperationException("The requested time slot conflicts with an existing appointment.");
@@ -114,9 +107,11 @@ public class AppointmentsService : IAppointmentsService
 
     private async Task<bool> HasSchedulingConflict(AppointmentDto appointment, int? excludeAppointmentId = null)
     {
+        // Find any appointments that overlap with the proposed time slot
         var query = _dbContext.Appointments.Where(a =>
             (a.StartTime < appointment.EndTime && a.EndTime > appointment.StartTime)).AsQueryable();
 
+        // Exclude the current appointment from the conflict check
         if (excludeAppointmentId.HasValue)
         {
             query = query.Where(a => a.Id != excludeAppointmentId.Value);

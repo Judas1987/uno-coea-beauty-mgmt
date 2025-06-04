@@ -13,9 +13,9 @@ public class CustomersService : ICustomersService
     private readonly IMapper _mapper;
 
     // Loyalty points configuration
-    private const int POINTS_PER_VISIT = 10;
-    private const int POINTS_PER_REFERRAL = 50;
-    private const decimal POINTS_TO_CURRENCY_RATIO = 0.01m; // 100 points = $1
+    private const int POINTS_PER_VISIT = 10;        // Points earned for each salon visit
+    private const int POINTS_PER_REFERRAL = 50;     // Points earned for referring a new customer
+    private const decimal POINTS_TO_CURRENCY_RATIO = 0.01m; // 100 points = $1 in discounts
 
     public CustomersService(ISalonDbContext dbContext, IMapper mapper)
     {
@@ -25,6 +25,7 @@ public class CustomersService : ICustomersService
 
     public async Task<IEnumerable<CustomerDto>> GetAllCustomersAsync()
     {
+        // Return customers sorted by last name, then first name for easy lookup
         var customers = await _dbContext.Customers
             .OrderBy(c => c.LastName)
             .ThenBy(c => c.FirstName)
@@ -46,6 +47,7 @@ public class CustomersService : ICustomersService
     {
         var customer = _mapper.Map<Customer>(customerDto);
 
+        // New customers start with 0 loyalty points
         customer.LoyaltyPoints = 0;
 
         _dbContext.Customers.Add(customer);
@@ -62,7 +64,7 @@ public class CustomersService : ICustomersService
             throw new ArgumentException($"Customer with ID {customerId} not found.");
         }
 
-        // Preserve the existing loyalty points when updating other information
+        // Preserve the existing loyalty points when updating customer info
         var existingPoints = customer.LoyaltyPoints;
         _mapper.Map(customerDto, customer);
         customer.LoyaltyPoints = existingPoints;
@@ -72,10 +74,19 @@ public class CustomersService : ICustomersService
 
     public async Task DeleteCustomerAsync(int customerId)
     {
-        var customer = await _dbContext.Customers.FindAsync(customerId);
+        var customer = await _dbContext.Customers
+            .Include(c => c.Appointments)
+            .FirstOrDefaultAsync(c => c.Id == customerId);
+
         if (customer == null)
         {
             throw new ArgumentException($"Customer with ID {customerId} not found.");
+        }
+
+        if (customer.Appointments.Count != 0)
+        {
+            throw new InvalidOperationException(
+                "Cannot delete customer with existing appointments. Consider marking as inactive instead.");
         }
 
         _dbContext.Customers.Remove(customer);
@@ -108,32 +119,6 @@ public class CustomersService : ICustomersService
         await _dbContext.SaveChangesAsync();
 
         return customer.LoyaltyPoints;
-    }
-
-    public async Task<(int remainingPoints, decimal discountAmount)> UsePointsForDiscountAsync(
-        int customerId, int pointsToUse)
-    {
-        var customer = await _dbContext.Customers.FindAsync(customerId);
-        if (customer == null)
-        {
-            throw new ArgumentException($"Customer with ID {customerId} not found.");
-        }
-
-        if (pointsToUse > customer.LoyaltyPoints)
-        {
-            throw new InvalidOperationException("Not enough loyalty points available.");
-        }
-
-        if (pointsToUse <= 0)
-        {
-            throw new ArgumentException("Points to use must be greater than zero.");
-        }
-
-        var discountAmount = pointsToUse * POINTS_TO_CURRENCY_RATIO;
-        customer.LoyaltyPoints -= pointsToUse;
-        await _dbContext.SaveChangesAsync();
-
-        return (customer.LoyaltyPoints, discountAmount);
     }
 
     public async Task<decimal> GetAvailableDiscountAmountAsync(int customerId)

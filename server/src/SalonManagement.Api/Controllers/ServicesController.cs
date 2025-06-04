@@ -1,6 +1,7 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using SalonManagement.Api.Models.Services;
+using SalonManagement.Api.Models.ServiceCategories;
 using SalonManagement.Dal.Dtos;
 using SalonManagement.Services.Interfaces;
 using SalonManagement.Api.Validation;
@@ -8,17 +9,24 @@ using SalonManagement.Api.Validation;
 namespace SalonManagement.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/services")]
 public class ServicesController : ControllerBase
 {
     private readonly IServicesService _servicesService;
+    private readonly IServiceCategoriesService _categoriesService;
     private readonly IMapper _mapper;
 
-    public ServicesController(IServicesService servicesService, IMapper mapper)
+    public ServicesController(
+        IServicesService servicesService,
+        IServiceCategoriesService categoriesService,
+        IMapper mapper)
     {
         _servicesService = servicesService;
+        _categoriesService = categoriesService;
         _mapper = mapper;
     }
+
+    #region Service Endpoints
 
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<ServiceViewModel>), StatusCodes.Status200OK)]
@@ -44,7 +52,7 @@ public class ServicesController : ControllerBase
     [HttpPost]
     [ProducesResponseType(typeof(ServiceViewModel), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<ServiceViewModel>> CreateService(CreateServiceRequest request)
+    public async Task<ActionResult<ServiceViewModel>> CreateService([FromBody] CreateServiceRequest request)
     {
         var errorResult = request.Validate();
         if (errorResult is not null) return BadRequest(errorResult);
@@ -164,25 +172,86 @@ public class ServicesController : ControllerBase
         }
     }
 
-    [HttpGet("search")]
-    [ProducesResponseType(typeof(IEnumerable<ServiceViewModel>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<ServiceViewModel>>> SearchServices([FromQuery] string searchTerm)
+    #endregion
+
+    #region Category Endpoints
+
+    [HttpGet("categories")]
+    [ProducesResponseType(typeof(IEnumerable<ServiceCategoryViewModel>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IEnumerable<ServiceCategoryViewModel>>> GetAllCategories()
     {
-        var services = await _servicesService.SearchServicesAsync(searchTerm);
-        return Ok(_mapper.Map<IEnumerable<ServiceViewModel>>(services));
+        var categories = await _categoriesService.GetAllCategoriesAsync();
+        return Ok(_mapper.Map<IEnumerable<ServiceCategoryViewModel>>(categories));
     }
 
-    [HttpGet("price-range")]
-    [ProducesResponseType(typeof(IEnumerable<ServiceViewModel>), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<IEnumerable<ServiceViewModel>>> GetServicesByPriceRange([FromQuery] decimal minPrice, [FromQuery] decimal maxPrice)
+    [HttpGet("categories/{id:int}")]
+    [ProducesResponseType(typeof(ServiceCategoryViewModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ServiceCategoryViewModel>> GetCategoryById(int id)
     {
-        if (minPrice > maxPrice)
+        var category = await _categoriesService.GetCategoryByIdAsync(id);
+        if (category == null)
         {
-            return BadRequest("Minimum price cannot be greater than maximum price");
+            return NotFound();
         }
-
-        var services = await _servicesService.GetServicesByPriceRangeAsync(minPrice, maxPrice);
-        return Ok(_mapper.Map<IEnumerable<ServiceViewModel>>(services));
+        return Ok(_mapper.Map<ServiceCategoryViewModel>(category));
     }
+
+    [HttpPost("categories")]
+    [ProducesResponseType(typeof(ServiceCategoryViewModel), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ServiceCategoryViewModel>> CreateCategory([FromBody] CreateServiceCategoryRequest request)
+    {
+        var errorResult = request.Validate();
+        if (errorResult is not null) return BadRequest(errorResult);
+
+        var categoryDto = _mapper.Map<ServiceCategoryDto>(request);
+        var createdCategory = await _categoriesService.CreateCategoryAsync(categoryDto);
+        var viewModel = _mapper.Map<ServiceCategoryViewModel>(createdCategory);
+        return CreatedAtAction(nameof(GetCategoryById), new { id = viewModel.Id }, viewModel);
+    }
+
+    [HttpPut("categories/{id:int}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateCategory(int id, [FromBody] UpdateServiceCategoryRequest request)
+    {
+        var errorResult = request.Validate();
+        if (errorResult is not null) return BadRequest(errorResult);
+
+        try
+        {
+            var categoryDto = _mapper.Map<ServiceCategoryDto>(request);
+            await _categoriesService.UpdateCategoryAsync(id, categoryDto);
+            return NoContent();
+        }
+        catch (ArgumentException ex)
+        {
+            return NotFound(ex.Message);
+        }
+    }
+
+    [HttpDelete("categories/{id:int}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> DeleteCategory(int id)
+    {
+        try
+        {
+            await _categoriesService.DeleteCategoryAsync(id);
+            return NoContent();
+        }
+        catch (ArgumentException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    #endregion
 } 

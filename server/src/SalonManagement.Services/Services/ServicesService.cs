@@ -71,7 +71,7 @@ public class ServicesService : IServicesService
         service.Price = serviceDto.Price;
         service.DurationMinutes = serviceDto.DurationMinutes;
         service.CategoryId = serviceDto.CategoryId;
-        service.IsActive = serviceDto.IsActive ?? true;
+        service.IsActive = serviceDto.IsActive;
         service.IsPromotional = serviceDto.IsPromotional ?? false;
         service.PromotionalPrice = serviceDto.PromotionalPrice;
 
@@ -105,7 +105,7 @@ public class ServicesService : IServicesService
     {
         var services = await _dbContext.Services
             .Include(s => s.Category)
-            .Where(s => s.CategoryId == categoryId && (s.IsActive == null || s.IsActive == true))
+            .Where(s => s.CategoryId == categoryId && s.IsActive == true)
             .OrderBy(s => s.Title)
             .ToListAsync();
 
@@ -116,8 +116,7 @@ public class ServicesService : IServicesService
     {
         var promotions = await _dbContext.Services
             .Include(s => s.Category)
-            .Where(s => (s.IsActive == null || s.IsActive == true) &&
-                       (s.IsPromotional == true))
+            .Where(s => s.IsActive == true && s.IsPromotional == true)
             .OrderBy(s => s.Title)
             .ToListAsync();
 
@@ -188,7 +187,7 @@ public class ServicesService : IServicesService
         var services = await _dbContext.Services
             .Include(s => s.Category)
             .Where(s =>
-                (s.IsActive ?? true) &&
+                (s.IsActive) &&
                 (
                     (s.IsPromotional == true && s.PromotionalPrice >= minPrice && s.PromotionalPrice <= maxPrice) ||
                     (s.IsPromotional != true && s.Price >= minPrice && s.Price <= maxPrice)

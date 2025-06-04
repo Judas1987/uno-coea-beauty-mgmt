@@ -124,22 +124,4 @@ public class CustomersController : ControllerBase
             return NotFound();
         }
     }
-
-    [HttpPost("{id}/loyalty/use")]
-    public async Task<ActionResult<object>> UsePointsForDiscount(int id, [FromBody] int pointsToUse)
-    {
-        try
-        {
-            var (remainingPoints, discountAmount) = await _customersService.UsePointsForDiscountAsync(id, pointsToUse);
-            return Ok(new { remainingPoints, discountAmount });
-        }
-        catch (ArgumentException)
-        {
-            return NotFound();
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(ex.Message);
-        }
-    }
 }

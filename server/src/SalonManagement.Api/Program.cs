@@ -20,18 +20,6 @@ public class Program
         // Register FluentValidation
         builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
-        // Configure CORS
-        builder.Services.AddCors(options =>
-        {
-            options.AddDefaultPolicy(policy =>
-            {
-                policy.WithOrigins("http://localhost:5027", "https://localhost:7121")
-                      .AllowAnyMethod()
-                      .AllowAnyHeader()
-                      .AllowCredentials();
-            });
-        });
-
         // Configure Swagger/OpenAPI
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(c =>
@@ -41,11 +29,6 @@ public class Program
                 Title = "Beauty Salon Management API",
                 Version = "v1",
                 Description = "API for managing beauty salon appointments, services, and customers",
-                Contact = new OpenApiContact
-                {
-                    Name = "Development Team",
-                    Email = "dev@example.com"
-                }
             });
         });
 
