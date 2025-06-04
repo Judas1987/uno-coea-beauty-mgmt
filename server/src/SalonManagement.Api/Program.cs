@@ -17,6 +17,9 @@ public class Program
         // Add services to the container.
         builder.Services.AddControllers();
 
+        // Register FluentValidation
+        builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+
         // Configure CORS
         builder.Services.AddCors(options =>
         {

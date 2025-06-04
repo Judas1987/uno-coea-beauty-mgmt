@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using SalonManagement.Api.Models.Appointments;
 using SalonManagement.Dal.Dtos;
 using SalonManagement.Services.Interfaces;
+using SalonManagement.Api.Validation;
 
 namespace SalonManagement.Api.Controllers;
 
@@ -47,6 +48,9 @@ public class AppointmentsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<AppointmentViewModel>> CreateAppointment(CreateAppointmentRequest request)
     {
+        var errorResult = request.Validate();
+        if (errorResult is not null) return BadRequest(errorResult);
+
         try
         {
             var appointmentDto = _mapper.Map<AppointmentDto>(request);
@@ -76,6 +80,9 @@ public class AppointmentsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> UpdateAppointment(int id, CreateAppointmentRequest request)
     {
+        var errorResult = request.Validate();
+        if (errorResult is not null) return BadRequest(errorResult);
+
         try
         {
             var appointmentDto = _mapper.Map<AppointmentDto>(request);

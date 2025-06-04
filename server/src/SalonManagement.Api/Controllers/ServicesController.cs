@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using SalonManagement.Api.Models.Services;
 using SalonManagement.Dal.Dtos;
 using SalonManagement.Services.Interfaces;
+using SalonManagement.Api.Validation;
 
 namespace SalonManagement.Api.Controllers;
 
@@ -45,6 +46,9 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ServiceViewModel>> CreateService(CreateServiceRequest request)
     {
+        var errorResult = request.Validate();
+        if (errorResult is not null) return BadRequest(errorResult);
+
         try
         {
             var serviceDto = _mapper.Map<ServiceDto>(request);
@@ -64,6 +68,9 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateService(int id, UpdateServiceRequest request)
     {
+        var errorResult = request.Validate();
+        if (errorResult is not null) return BadRequest(errorResult);
+
         try
         {
             var serviceDto = _mapper.Map<ServiceDto>(request);
@@ -104,8 +111,8 @@ public class ServicesController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<ServiceViewModel>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<ServiceViewModel>>> GetActivePromotions()
     {
-        var promotions = await _servicesService.GetActivePromotionsAsync();
-        return Ok(_mapper.Map<IEnumerable<ServiceViewModel>>(promotions));
+        var services = await _servicesService.GetActivePromotionsAsync();
+        return Ok(_mapper.Map<IEnumerable<ServiceViewModel>>(services));
     }
 
     [HttpPatch("{id:int}/promotional-price")]

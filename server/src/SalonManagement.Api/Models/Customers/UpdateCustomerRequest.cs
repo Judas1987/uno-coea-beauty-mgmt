@@ -1,24 +1,16 @@
-using System.ComponentModel.DataAnnotations;
+using FluentValidation;
+using SalonManagement.Api.Validation;
+using SalonManagement.Api.Validation.Validators;
 
 namespace SalonManagement.Api.Models.Customers;
 
-public class UpdateCustomerRequest
+public class UpdateCustomerRequest : IValidatable<UpdateCustomerRequest>
 {
-    [Required]
-    [StringLength(100)]
     public string FirstName { get; set; } = string.Empty;
-
-    [Required]
-    [StringLength(100)]
     public string LastName { get; set; } = string.Empty;
-
-    [Required]
-    [EmailAddress]
-    [StringLength(255)]
     public string Email { get; set; } = string.Empty;
-
-    [Required]
-    [Phone]
-    [StringLength(20)]
     public string PhoneNumber { get; set; } = string.Empty;
+
+    public IValidator<UpdateCustomerRequest> GetValidator() 
+        => new UpdateCustomerRequestValidator();
 } 

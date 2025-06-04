@@ -1,24 +1,17 @@
-using System.ComponentModel.DataAnnotations;
+using FluentValidation;
+using SalonManagement.Api.Validation;
+using SalonManagement.Api.Validation.Validators;
 
 namespace SalonManagement.Api.Models.Services;
 
-public class CreateServiceRequest
+public class CreateServiceRequest : IValidatable<CreateServiceRequest>
 {
-    [Required]
-    [StringLength(100)]
     public string Title { get; set; } = string.Empty;
-
-    [Required]
-    [StringLength(500)]
     public string Description { get; set; } = string.Empty;
-
-    [Required]
-    [Range(0.01, double.MaxValue)]
     public decimal Price { get; set; }
-
-    [Required]
     public int CategoryId { get; set; }
-
-    [Range(0, int.MaxValue)]
     public int? DurationMinutes { get; set; }
+
+    public IValidator<CreateServiceRequest> GetValidator() 
+        => new CreateServiceRequestValidator();
 } 

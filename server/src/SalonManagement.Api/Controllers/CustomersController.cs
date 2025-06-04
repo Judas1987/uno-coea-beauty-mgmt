@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using SalonManagement.Api.Models.Customers;
 using SalonManagement.Dal.Dtos;
 using SalonManagement.Services.Interfaces;
+using SalonManagement.Api.Validation;
 
 namespace SalonManagement.Api.Controllers;
 
@@ -24,12 +25,12 @@ public class CustomersController : ControllerBase
     {
         var customers = await _customersService.GetAllCustomersAsync();
         var viewModels = _mapper.Map<IEnumerable<CustomerViewModel>>(customers);
-        
+
         foreach (var customer in viewModels)
         {
             customer.AvailableDiscountAmount = await _customersService.GetAvailableDiscountAmountAsync(customer.Id);
         }
-        
+
         return Ok(viewModels);
     }
 
@@ -44,13 +45,16 @@ public class CustomersController : ControllerBase
 
         var viewModel = _mapper.Map<CustomerViewModel>(customer);
         viewModel.AvailableDiscountAmount = await _customersService.GetAvailableDiscountAmountAsync(id);
-        
+
         return Ok(viewModel);
     }
 
     [HttpPost]
     public async Task<ActionResult<CustomerViewModel>> CreateCustomer(CreateCustomerRequest request)
     {
+        var errorResult = request.Validate();
+        if (errorResult is not null) return BadRequest(errorResult);
+
         var customerDto = _mapper.Map<CustomerDto>(request);
         var createdCustomer = await _customersService.CreateCustomerAsync(customerDto);
         var viewModel = _mapper.Map<CustomerViewModel>(createdCustomer);
@@ -62,11 +66,14 @@ public class CustomersController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateCustomer(int id, UpdateCustomerRequest request)
     {
-        var customerDto = _mapper.Map<CustomerDto>(request);
-        customerDto.Id = id;
+        var errorResult = request.Validate();
+        if (errorResult is not null) return BadRequest(errorResult);
 
         try
         {
+            var customerDto = _mapper.Map<CustomerDto>(request);
+            customerDto.Id = id;
+
             await _customersService.UpdateCustomerAsync(id, customerDto);
             return NoContent();
         }
@@ -135,4 +142,4 @@ public class CustomersController : ControllerBase
             return BadRequest(ex.Message);
         }
     }
-} 
+}
